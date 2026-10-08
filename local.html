@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111111">
+<title>AI Smart Glasses Core v1.021</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;padding:20px;background:#f5f5f5;color:#111}
+.card{max-width:700px;margin:auto;background:#fff;border-radius:16px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+h1{font-size:22px;margin-top:0}.status{padding:10px;border-radius:10px;background:#eee;margin:12px 0}
+textarea,input,button{width:100%;box-sizing:border-box;font-size:16px;padding:12px;border-radius:10px;border:1px solid #ccc;margin-top:8px}
+button{background:#111;color:#fff;border:0}.out{white-space:pre-wrap;background:#111;color:#fff;padding:12px;border-radius:10px;margin-top:12px;min-height:100px}
+small{color:#666}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>AI Smart Glasses Core v1.021</h1>
+<div class="status">スマホ1台ローカルモード: 起動中</div>
+<small>AI Core URLは不要です。これはスマホだけで動作確認するための軽量デモです。</small>
+
+<label>入力</label>
+<textarea id="input" rows="4" placeholder="例: 2 + 3"></textarea>
+<button id="run">実行</button>
+<div class="out" id="output">待機中</div>
+</div>
+
+<script>
+function calc(s){
+  const t=s.trim();
+  if (/^[0-9+\-*/(). %]+$/.test(t)) {
+    try {
+      // Demo-only arithmetic evaluator; not intended for untrusted code execution.
+      const result = Function('"use strict"; return (' + t + ')')();
+      if (Number.isFinite(result)) return {type:"math", result};
+    } catch(e){}
+  }
+  return null;
+}
+
+function route(s){
+  const lower=s.toLowerCase();
+  const c=calc(s);
+  if(c) return c;
+
+  if (/速度|速さ|velocity|speed/.test(s)) {
+    return {type:"physics", engine:"Julia", message:"物理計算ルートを選択しました", demo:true};
+  }
+  if (/化学|mol|モル|pH|ph/.test(s)) {
+    return {type:"chemistry", engine:"SymPy/Python", message:"化学計算ルートを選択しました", demo:true};
+  }
+  if (/翻訳|translate|英語|日本語/.test(s)) {
+    return {type:"translation", message:"言語処理ルートを選択しました", demo:true};
+  }
+  return {type:"general", engine:"Mojo", message:"AI Core一般処理ルートを選択しました", demo:true};
+}
+
+document.getElementById("run").onclick=()=>{
+  const s=document.getElementById("input").value;
+  if(!s.trim()){document.getElementById("output").textContent="入力してください";return;}
+  document.getElementById("output").textContent=JSON.stringify({
+    version:"1.021", local:true, request:s, response:route(s)
+  },null,2);
+};
+</script>
+</body>
+</html>
